@@ -1,0 +1,11 @@
+vendor/*
+config.php
+ftpsync.settings
+web/resources/photos/fields/*
+web/resources/photos/places/*
+web/resources/photos/users/*
+web/resources/photos/resources/*
+finding_object_game
+finding_object_game/*
+trivia
+trivia/*

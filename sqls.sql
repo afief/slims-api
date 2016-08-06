@@ -1,0 +1,1 @@
+ALTER TABLE `member` ADD UNIQUE(`member_id`);

@@ -1,0 +1,1 @@
+Sementara tanya afif kalo ada apa-apa. belum disempatkan nulis Readme.
