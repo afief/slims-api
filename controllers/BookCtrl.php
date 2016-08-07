@@ -51,13 +51,13 @@ class BookCtrl extends BaseController {
 
 
 		for ($i = 0; $i < count($select); $i++) {
+			$select[$i]['item_count'] = $this->getBiblioItemCount($select[$i]['biblio_id']);
 			$select[$i]['rate'] = $this->getBiblioRate($select[$i]['biblio_id']);
 			$select[$i]['authors'] = $this->getBibioAuthors($select[$i]['biblio_id']);
 			$select[$i]['topic'] = $this->getBibioTopics($select[$i]['biblio_id']);
 		}
 
 		if (is_array($select)) {
-
 			$args['total'] = $this->db->count('biblio', $where);
 
 			$this->setTrue();
@@ -103,6 +103,7 @@ class BookCtrl extends BaseController {
 			['biblio.biblio_id' => $biblio_id]);
 
 		if ($get) {
+			$get['item'] = $this->getBiblioItems($biblio_id);
 			$get['authors'] = $this->getBibioAuthors($biblio_id);
 			$get['topic'] = $this->getBibioTopics($biblio_id);
 			$get['rate'] = $this->getBiblioRate($biblio_id);
@@ -139,6 +140,22 @@ class BookCtrl extends BaseController {
 			return $rate;
 		}
 		return 0;
+	}
+
+	private function getBiblioItemCount($biblio_id) {
+		$manual = $this->db->manual('SELECT COUNT(`item`.`item_id`) as `jumlah` FROM `item` ' .
+			'LEFT JOIN `loan` ON `item`.`item_code` = `loan`.`item_code` AND `loan`.`is_return` = 0 AND `loan`.`is_lent` = 1 ' .
+			'WHERE biblio_id = ' . $biblio_id . ' AND `loan`.`is_return` IS NULL');
+		if ($manual) {
+			return $manual[0]['jumlah'];
+		}
+		return 0;
+	}
+	private function getBiblioItems($biblio_id) {
+		return $this->db->select('item(i)',
+			['[>]mst_coll_type(t)' => ['coll_type_id' => 'coll_type_id']],
+			['i.item_id', 'i.call_number', 't.coll_type_id', 't.coll_type_name', 'i.item_code', 'i.inventory_code'],
+			['i.biblio_id' => $biblio_id]);
 	}
 
 	public function setRate(Request $req, Response $res, $args) {
