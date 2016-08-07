@@ -29,9 +29,16 @@ $app->group('/user', function() {
  * BOOK Route
  */
 $app->group('/book', function() {
-	// ambil data user yang login
+	// ambil data buku
 	$this->get('s', controllers\BookCtrl::class . ':select');
-	$this->get('/{id}', controllers\BookCtrl::class . ':get');
+
+	$this->group('/{biblio_id}', function() {
+		$this->get('', controllers\BookCtrl::class . ':get');
+		$this->post('/rate', controllers\BookCtrl::class . ':setRate');
+
+		$this->get('/comments', controllers\BookCommentCtrl::class . ':select');
+		$this->post('/comment', controllers\BookCommentCtrl::class . ':set');
+	})->add(middleware\BookMiddleware::class . ':checkId');
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 
