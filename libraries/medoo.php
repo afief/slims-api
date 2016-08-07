@@ -229,6 +229,15 @@ class medoo
 
 		foreach ($columns as $key => $value)
 		{
+			$colalias = '';
+			if (strpos($value, "(") !== false) {
+				$colalias = substr($value, strpos($value, "(") + 1, strrpos($value, ")") - strpos($value, "(") - 1);
+				if ($colalias) {
+					$colalias = ' AS ' . $this->quote($colalias);
+					$value = substr($value, 0, strrpos($value, '('));
+				}
+			}
+
 			preg_match('/([a-zA-Z0-9_\-\.]*)\s*\[(.*?)\]/i', $value, $match);
 
 			if (isset($match[1], $match[ 2 ]))
@@ -238,21 +247,9 @@ class medoo
 				$colname = str_replace('[', '(', $colname);
 				$colname = str_replace(']', ')', $colname);
 
-				$colalias = false;
-				if (strpos($value, "(") !== false) {
-					$colalias = substr($value, strpos($value, "(") + 1, strrpos($value, ")") - strpos($value, "(")-1);
-				}
-
-				if($colalias)
-				{
-					array_push($stack, $colname . ' AS ' . $this->quote($colalias));
-				}
-				else
-				{
-					array_push($stack, $colname);
-				}
+				array_push($stack, $colname . $colalias);
 			} else {
-				array_push($stack, $this->column_quote( $value ));
+				array_push($stack, $this->column_quote( $value ) . $colalias);
 			}
 		}
 

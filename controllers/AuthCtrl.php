@@ -83,8 +83,11 @@ class AuthCtrl extends BaseController {
 				if ($this->cleanInput($postData, ['member_id', 'member_name', 'gender', 'birth_date', 'member_address', 'email', 'postal_code', 'member_phone', 'password'], $disallowed)) {
 
 					$postData['register_date']	= date('Y-m-d H:i:s');
-					$postData['expire_date']	= date('Y-m-d H:i:s');
+					$postData['input_date']	= date('Y-m-d H:i:s');
+					$postData['last_update']	= date('Y-m-d H:i:s');
+					$postData['expire_date']	= date('Y-m-d H:i:s', strtotime("+1 year"));
 					$postData['member_email']	= $postData['email'];
+					$postData['member_type_id']	= 1;
 					$postData['mpasswd']		= md5($postData['password']);
 					unset($postData['email']);
 					unset($postData['password']);

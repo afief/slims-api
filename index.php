@@ -25,5 +25,16 @@ $app->group('/user', function() {
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 
+/* 
+ * BOOK Route
+ */
+$app->group('/book', function() {
+	// ambil data user yang login
+	$this->get('s', controllers\BookCtrl::class . ':select');
+	$this->get('/{id}', controllers\BookCtrl::class . ':get');
+
+})->add(middleware\AuthMiddleware::class . ':checkLogin');
+
+
 /* RUN!! */
 $app->run();
