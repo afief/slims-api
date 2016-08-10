@@ -26,7 +26,7 @@ class UserCtrl extends BaseController {
    	private function getUserById($memberId) {
    		$user = $this->db->get('member',
 				[
-					'member_id', 'member_name', 'member_image', 'member_email', 'member_address', 
+					'member_id', 'member_name', 'CONCAT[\'' . BASE_URL . 'images/persons/\', member_image](member_image)', 'member_email', 'member_address', 
 					'gender', 'birth_date', 'member_phone'
 				], ['member_id' => $memberId]);
 

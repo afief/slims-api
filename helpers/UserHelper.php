@@ -65,4 +65,11 @@ class UserHelper {
 		}
 		return false;
 	}
+
+	public function logout() {
+		if ($this->token && $this->id) {
+			$this->ci->db->update('member_logins', ['token' => ''], ['AND' => ['member_id' => $this->id, 'token' => $this->token]]);
+		}
+		return true;
+	}
 }

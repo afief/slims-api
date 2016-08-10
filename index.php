@@ -1,5 +1,6 @@
 <?php
-
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: token");
 require 'init.php';
 
 $app = new \Slim\App($container);
@@ -10,6 +11,8 @@ $app->group('/auth', function() {
 	$this->post('/login', controllers\AuthCtrl::class . ":login");
 	// register user baru
 	$this->post('/register', controllers\AuthCtrl::class . ":register");
+
+	$this->post('/logout', controllers\AuthCtrl::class . ':logout');
 	// konfirmasi dari email user
 	$this->get('/confirm/{code}', controllers\AuthCtrl::class . ":confirm");
 	// request kode konfirmasi lupa password

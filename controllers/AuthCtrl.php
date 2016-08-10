@@ -44,7 +44,7 @@ class AuthCtrl extends BaseController {
 					$this->error('Password yang dimasukkan salah.');
 				}
 			} else {
-				$this->error('Email tidak ditemukan');
+				$this->error('Username / Email tidak ditemukan');
 			}
 		} else {
 			$this->error('Data tidak lengkap');
@@ -52,13 +52,23 @@ class AuthCtrl extends BaseController {
 		return $this->result;
 	}
 
+	public function logout(Request $req, Response $res, $args) {
+		$logout = $this->user->logout();
+		if ($logout) {
+			$this->setTrue();
+		}
+
+		return $this->result;
+	}
+
 	/*
    		Register Function	
    	*/
 	public function register(Request $req, Response $res) {
-		$postData = $this->getPosts(['member_id', 'member_name', 'gender', 'birth_date', 'member_address', 'email', 'postal_code', 'member_phone', 'password']);
+		$postData = $this->getPosts(['member_id', 'member_name', 'email', 'member_phone', 'password']);
 
 		if ($postData) {
+			unset($postData['password2']);
 
 			/* check input */
 			if (!filter_var($postData['email'], FILTER_VALIDATE_EMAIL)) {
