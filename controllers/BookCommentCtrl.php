@@ -37,7 +37,7 @@ class BookCommentCtrl extends BaseController {
 		return $this->result;
 	}
 
-	public function set(Request $req, Response $res, $args) {
+	public function create(Request $req, Response $res, $args) {
 		$biblio_id = $args['biblio_id'];
 		$posts = $this->getPosts(['text']);
 
@@ -54,8 +54,17 @@ class BookCommentCtrl extends BaseController {
 					'input_date'=> date('Y-m-d H:i:s')
 				]);
 				if ($insert) {
+					$user = $this->user->getCurrentUser();
+
 					$this->setTrue();
-					$this->setData($insert);
+					$this->setData([
+						'comment_id' => $insert,
+						'comment'	 => $posts['text'],
+						'input_date' => date('Y-m-d H:i:s'),
+						'member_id'	 => $this->user->id,
+						'member_name'=> $user['member_name'],
+						'member_image' => $user['member_image']
+					]);
 				} else {
 					$this->error('failed');
 				}
@@ -66,7 +75,6 @@ class BookCommentCtrl extends BaseController {
 
 		return $this->result;
 	}
-
 }
 
 ?>

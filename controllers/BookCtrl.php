@@ -40,12 +40,16 @@ class BookCtrl extends BaseController {
 
 
 		$select = $this->db->select('biblio',
-			['[>]mst_gmd' => ['gmd_id' => 'gmd_id'], '[>]mst_publisher' => ['publisher_id' => 'publisher_id']],
-			['biblio.biblio_id', 'biblio.title', 'biblio.sor', 'biblio.edition', 'biblio.isbn_issn',
-			'biblio.publish_year', 'biblio.collation', 'biblio.series_title', 'biblio.call_number',
-			'biblio.language_id', 'biblio.image', 'biblio.file_att', 'biblio.opac_hide', 'biblio.promoted',
-			'biblio.gmd_id', 'mst_gmd.gmd_name', 'mst_gmd.icon_image(gmd_icon_image)',
-			'biblio.publisher_id', 'mst_publisher.publisher_name'
+			[
+				'[>]mst_gmd' => ['gmd_id' => 'gmd_id'],
+				'[>]mst_publisher' => ['publisher_id' => 'publisher_id'],
+				'[>]mst_language' => ['language_id' => 'language_id']
+			],
+			['biblio.biblio_id', 'biblio.title', 
+			'biblio.publish_year', 
+			'mst_language.language_name', 'biblio.image', 'biblio.promoted',
+			'mst_gmd.gmd_name',
+			'mst_publisher.publisher_name'
 			],
 			$where);
 
@@ -53,11 +57,25 @@ class BookCtrl extends BaseController {
 		for ($i = 0; $i < count($select); $i++) {
 			$select[$i]['item_count'] = $this->getBiblioItemCount($select[$i]['biblio_id']);
 			$select[$i]['rate'] = $this->getBiblioRate($select[$i]['biblio_id']);
-			$select[$i]['authors'] = $this->getBibioAuthors($select[$i]['biblio_id']);
-			$select[$i]['topic'] = $this->getBibioTopics($select[$i]['biblio_id']);
+
+			$authors = $this->getBibioAuthors($select[$i]['biblio_id']);
+			$authorTexts = [];
+			foreach ($authors as $author) {
+				$authorTexts[] = $author['author_name'];
+			}
+			$select[$i]['authors'] = implode(', ', $authorTexts);
+
+			$topics = $this->getBibioTopics($select[$i]['biblio_id']);
+			$topicTexts = [];
+			foreach ($topics as $topic) {
+				$topicTexts[] = $topic['topic'];
+			}
+			$select[$i]['topic'] = implode(', ', $topicTexts);
 		}
 
 		if (is_array($select)) {
+			unset($where['LIMIT']);
+			unset($where['ORDER']);
 			$args['total'] = $this->db->count('biblio', $where);
 
 			$this->setTrue();
@@ -70,43 +88,50 @@ class BookCtrl extends BaseController {
 	public function get(Request $req, Response $res, $args) {
 		$biblio_id = $args['biblio_id'];
 
-		$get = $this->db->get('biblio',
-			[
-			'[>]mst_gmd' => ['gmd_id' => 'gmd_id'],
-			'[>]mst_publisher' => ['publisher_id' => 'publisher_id'],
-			'[>]mst_place' => ['publish_place_id' => 'place_id']
-			],
-			['biblio.biblio_id',
-			'biblio.title',
-			'biblio.sor',
-			'biblio.edition',
-			'biblio.isbn_issn',
-			'biblio.publish_year',
-			'biblio.collation',
-			'biblio.series_title',
-			'biblio.call_number',
-			'biblio.language_id',
-			'biblio.source',
-			'biblio.classification',
-			'biblio.notes',
-			'biblio.image',
-			'biblio.file_att',
-			'biblio.opac_hide',
-			'biblio.promoted',
-			'biblio.input_date',
-			'biblio.last_update',
-			'mst_place.place_id',
-			'mst_place.place_name',
-			'biblio.gmd_id', 'mst_gmd.gmd_name', 'mst_gmd.icon_image(gmd_icon_image)',
-			'biblio.publisher_id', 'mst_publisher.publisher_name'
-			],
-			['biblio.biblio_id' => $biblio_id]);
+		$joins = [
+		'[>]mst_gmd' => ['gmd_id' => 'gmd_id'],
+		'[>]mst_publisher' => ['publisher_id' => 'publisher_id'],
+		'[>]mst_place' => ['publish_place_id' => 'place_id'],
+		'[>]mst_language' => ['language_id' => 'language_id']
+		];
+
+		$select = ['biblio.biblio_id',
+		'biblio.title',
+		'biblio.sor',
+		'biblio.edition',
+		'biblio.isbn_issn',
+		'biblio.publish_year',
+		'biblio.collation',
+		'biblio.series_title',
+		'biblio.call_number',
+		'mst_language.language_name',
+		'biblio.source',
+		'biblio.classification',
+		'biblio.notes',
+		'biblio.image',
+		'biblio.file_att',
+		'biblio.opac_hide',
+		'biblio.promoted',
+		'biblio.input_date',
+		'biblio.last_update',
+		'mst_place.place_id',
+		'mst_place.place_name',
+		'biblio.gmd_id', 'mst_gmd.gmd_name', 'mst_gmd.icon_image(gmd_icon_image)',
+		'biblio.publisher_id', 'mst_publisher.publisher_name'
+		];
+
+		$get = $this->db->get('biblio', $joins, $select, ['biblio.biblio_id' => $biblio_id]);
 
 		if ($get) {
 			$get['item'] = $this->getBiblioItems($biblio_id);
 			$get['authors'] = $this->getBibioAuthors($biblio_id);
 			$get['topic'] = $this->getBibioTopics($biblio_id);
 			$get['rate'] = $this->getBiblioRate($biblio_id);
+
+			if ($this->user->isLogin) {
+				$get['is_fav'] = $this->db->count('member_favorit', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
+				$get['own_rate'] = $this->db->get('biblio_rate', 'rate', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
+			}
 
 			$this->setTrue();
 			$this->setData($get);
@@ -183,6 +208,48 @@ class BookCtrl extends BaseController {
 
 		return $this->result;
 	}
+
+	public function getRate(Request $req, Response $res, $args)  {
+		$biblio_id = $args['biblio_id'];
+
+		$this->setTrue();
+
+		$rate = $this->db->get('biblio_rate', 'rate', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
+		if ($rate) {	
+			$this->setData($rate);
+		} else {
+			$this->setData(0);
+		}
+
+		return $this->result;
+	}
+
+
+	public function setFav(Request $req, Response $res, $args) {
+		$biblio_id = $args['biblio_id'];
+
+		$check = $this->db->get('member_favorit', 'id', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
+		if (!$check) {
+			$insert = $this->db->insert('member_favorit', ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]);
+			if ($insert) {
+				$this->setTrue();
+			}
+		} else {
+			$this->setTrue();
+		}
+
+		return $this->result;
+	}
+
+	public function unsetFav(Request $req, Response $res, $args) {
+		$biblio_id = $args['biblio_id'];
+
+		$this->db->delete('member_favorit', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
+		$this->setTrue();
+
+		return $this->result;
+	}
+
 }
 
 ?>

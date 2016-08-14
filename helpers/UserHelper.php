@@ -11,6 +11,7 @@ class UserHelper {
 
 	private $role = "";
 	private $ci;
+	private $currentUser = false;
 	public function __construct($ci) {
 		$this->ci = $ci;
 		$this->checkUser();
@@ -65,6 +66,24 @@ class UserHelper {
 		}
 		return false;
 	}
+
+	public function getCurrentUser() {
+		if ($this->currentUser) {
+			return $this->currentUser;
+		} else if ($this->id) {
+			$user = $this->ci->db->get('member',
+				[
+				'member_id', 'member_name', 'CONCAT[\'' . BASE_URL . 'images/persons/\', member_image](member_image)', 'member_email', 'member_address', 
+				'gender', 'birth_date', 'member_phone'
+				], ['member_id' => $this->id]);
+			if ($user) {
+				$this->currentUser = $user;
+				return $user;
+			}
+		}
+
+   		return false;
+   	}
 
 	public function logout() {
 		if ($this->token && $this->id) {

@@ -37,10 +37,14 @@ $app->group('/book', function() {
 
 	$this->group('/{biblio_id}', function() {
 		$this->get('', controllers\BookCtrl::class . ':get');
+		$this->get('/rate', controllers\BookCtrl::class . ':getRate');
 		$this->post('/rate', controllers\BookCtrl::class . ':setRate');
 
+		$this->post('/favorit', controllers\BookCtrl::class . ':setFav');
+		$this->post('/unfavorit', controllers\BookCtrl::class . ':unsetFav');
+
 		$this->get('/comments', controllers\BookCommentCtrl::class . ':select');
-		$this->post('/comment', controllers\BookCommentCtrl::class . ':set');
+		$this->post('/comment', controllers\BookCommentCtrl::class . ':create');
 	})->add(middleware\BookMiddleware::class . ':checkId');
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
