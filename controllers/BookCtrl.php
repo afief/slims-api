@@ -30,6 +30,12 @@ class BookCtrl extends BaseController {
 			if (isset($args['title'])) {
 				$whereAr['biblio.title[~]'] = '%' . $args['title'] . '%';
 			}
+			if (isset($args['favorit']) && $args['favorit']) {
+				if ($this->user->isLogin) {
+					$favIds = $this->db->select('member_favorit', 'biblio_id', ['member_id' => $this->user->id]);
+					$whereAr['biblio.biblio_id'] = $favIds;
+				}
+			}
 		}
 
 		if (count($whereAr) > 1) {
@@ -123,7 +129,7 @@ class BookCtrl extends BaseController {
 		$get = $this->db->get('biblio', $joins, $select, ['biblio.biblio_id' => $biblio_id]);
 
 		if ($get) {
-			$get['item'] = $this->getBiblioItems($biblio_id);
+			$get['items'] = $this->getBiblioItems($biblio_id);
 			$get['authors'] = $this->getBibioAuthors($biblio_id);
 			$get['topic'] = $this->getBibioTopics($biblio_id);
 			$get['rate'] = $this->getBiblioRate($biblio_id);
@@ -177,10 +183,14 @@ class BookCtrl extends BaseController {
 		return 0;
 	}
 	private function getBiblioItems($biblio_id) {
-		return $this->db->select('item(i)',
-			['[>]mst_coll_type(t)' => ['coll_type_id' => 'coll_type_id']],
-			['i.item_id', 'i.call_number', 't.coll_type_id', 't.coll_type_name', 'i.item_code', 'i.inventory_code'],
+		$items = $this->db->select('item(i)',
+			['[>]mst_coll_type(t)' => ['coll_type_id' => 'coll_type_id'], '[>]loan(l)' => ['item_code' => 'item_code', 'is_lent' => '=1', 'is_return' => '=0']],
+			['i.item_id', 'i.call_number', 't.coll_type_id', 't.coll_type_name', 'i.item_code', 'l.loan_date', 'l.due_date'],
 			['i.biblio_id' => $biblio_id]);
+
+		//print_r( $this->db->last_query() );
+
+		return $items;
 	}
 
 	public function setRate(Request $req, Response $res, $args) {

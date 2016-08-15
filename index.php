@@ -25,6 +25,7 @@ $app->group('/auth', function() {
 $app->group('/user', function() {
 	// ambil data user yang login
 	$this->get('', controllers\UserCtrl::class . ':getUser');
+	$this->get('/books', controllers\UserCtrl::class . ':getBookHistory');
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 

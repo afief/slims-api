@@ -619,16 +619,28 @@ class medoo
 
 							foreach ($relation as $key => $value)
 							{
-								$joins[] = $this->prefix . (
-									strpos($key, '.') > 0 ?
-										// For ['tableB.column' => 'column']
-										'`' . str_replace('.', '`.`', $key) . '`' :
+								if (strpos($value, '=') !== false) {
+									$joins[] = $this->prefix . (
+										strpos($key, '.') > 0 ?
+											// For ['tableB.column' => 'column']
+											'`' . str_replace('.', '`.`', $key) . '`' :
 
-										// For ['column1' => 'column2']
-										$tableAlias . '.`' . $key . '`'
-								) .
-								' = ' .
-								'`' . (isset($match[ 5 ]) ? $match[ 5 ] : $match[ 3 ]) . '`.`' . $value . '`';
+											// For ['column1' => 'column2']
+											'`' . (isset($match[ 5 ]) ? $match[ 5 ] : $match[ 3 ]) . '`.`' . $key . '`'
+									) .
+									' = ' . $this->quote(substr($value, 1));
+								} else {
+									$joins[] = $this->prefix . (
+										strpos($key, '.') > 0 ?
+											// For ['tableB.column' => 'column']
+											'`' . str_replace('.', '`.`', $key) . '`' :
+
+											// For ['column1' => 'column2']
+											$tableAlias . '.`' . $key . '`'
+									) .
+									' = ' .
+									'`' . (isset($match[ 5 ]) ? $match[ 5 ] : $match[ 3 ]) . '`.`' . $value . '`';
+								}
 							}
 
 							$relation = 'ON ' . implode($joins, ' AND ');
