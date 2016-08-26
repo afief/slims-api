@@ -18,3 +18,6 @@ $container['user'] = function($c) {
 $container['util'] = function($c) {
 	return new \helpers\UtilHelper($c);
 };
+$container['notif'] = function($c) {
+	return new \helpers\NotificationHelper($c);
+};

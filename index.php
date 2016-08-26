@@ -51,5 +51,16 @@ $app->group('/book', function() {
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 
 
+/*
+ * Messages Route
+ */
+$app->group('/message', function() {
+	$this->get('s', controllers\MemberMessage::class . ':select');
+	$this->post('', controllers\MemberMessage::class . ':create');
+
+
+})->add(middleware\AuthMiddleware::class . ':checkLogin');
+
+
 /* RUN!! */
 $app->run();
