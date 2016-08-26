@@ -58,6 +58,7 @@ $app->group('/message', function() {
 	$this->get('s', controllers\MemberMessage::class . ':select');
 	$this->post('', controllers\MemberMessage::class . ':create');
 
+	$this->get('/{from_id}', controllers\MemberMessage::class . ':getMessages');
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 

@@ -47,11 +47,9 @@ class MemberMessage extends BaseController {
 	}
 
 	public function select(Request $req, Response $res, $args) {
-		$fromMembers = $this->db->select('member_message(msg)',
-			['[>]member(m)' => ['msg.from_id' => 'member_id']],
-			['m.member_id', 'm.member_name', 'm.gender', 'CONCAT[\'' . BASE_URL . 'images/persons/\', m.member_image](member_image)'],
-			['AND' => ['msg.member_id' => $this->user->id, 'msg.is_from_admin' => 0], 'GROUP' => 'msg.member_id', 'ORDER' => 'msg.timestamp DESC']
-		);
+		$fromMembers = $this->db->manual('SELECT m.member_id, m.member_name, m.gender, m.member_image FROM member m ' .
+			'INNER JOIN (SELECT from_id FROM `member_message` WHERE member_id = ' . $this->db->quote($this->user->id) . ' UNION ' .
+			'(SELECT member_id as `from_id` FROM `member_message` WHERE from_id = ' . $this->db->quote($this->user->id) . ')) f ON f.from_id = m.member_id');
 
 		if (is_array($fromMembers)) {
 			$this->setTrue();
@@ -66,10 +64,12 @@ class MemberMessage extends BaseController {
 	public function getMessages(Request $req, Response $res, $args) {
 		$from_id = $args['from_id'];
 
-		$result = $this->db->select('member_message',
-			['id', 'text', 'timestamp'],
-			['from_id' => $from_id, 'ORDER' => 'timestamp DESC']
-		);
+		$result = $this->db->manual('SELECT `id`,`text`,`timestamp` FROM `member_message` WHERE ' . 
+			'(`from_id` = ' . $this->db->quote($from_id) . ' AND `member_id` = ' . $this->db->quote($this->user->id) . ') OR ' .
+			'(`member_id` = ' . $this->db->quote($this->user->id) . ' AND `from_id` = ' . $this->db->quote($from_id) . ') ' .
+			'ORDER BY `timestamp` DESC');
+
+		print_r($this->db->last_query());
 
 		if (is_array($result)) {
 			$this->setTrue();
