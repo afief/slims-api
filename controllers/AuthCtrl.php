@@ -104,6 +104,12 @@ class AuthCtrl extends BaseController {
 
 					$this->db->insert('member', $postData);
 
+					$insert = $this->db->insert('member_message', [
+						'member_id'		=> $postData['member_id'],
+						'from_id'		=> 'adminlabschool',
+						'text'			=> "Selamat Datang di Digital Library 2.0"
+					]);
+
 					if ($this->db->lastError != '') {
 						$this->error($this->db->lastError);
 					} else {

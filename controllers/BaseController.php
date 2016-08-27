@@ -10,12 +10,14 @@ class BaseController {
 	protected $db;
 	protected $user;
 	protected $ci;
+	protected $notif;
 	protected $result = ['status' => false];
 
 	public function __construct(ContainerInterface $ci) {
 		$this->ci = $ci;
 		$this->db = $ci->db;
 		$this->user = $ci->user;
+		$this->notif = $ci->notif;
 	}
 
 	/* Posts Functions */

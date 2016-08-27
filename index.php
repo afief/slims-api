@@ -25,6 +25,7 @@ $app->group('/auth', function() {
 $app->group('/user', function() {
 	// ambil data user yang login
 	$this->get('', controllers\UserCtrl::class . ':getUser');
+	$this->post('', controllers\UserCtrl::class . ':updateUser');
 	$this->get('/books', controllers\UserCtrl::class . ':getBookHistory');
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
@@ -55,13 +56,20 @@ $app->group('/book', function() {
  * Messages Route
  */
 $app->group('/message', function() {
-	$this->get('s', controllers\MemberMessage::class . ':select');
-	$this->post('', controllers\MemberMessage::class . ':create');
+	$this->get('s', controllers\MemberMessageCtrl::class . ':select');
+	$this->post('', controllers\MemberMessageCtrl::class . ':create');
 
-	$this->get('/{from_id}', controllers\MemberMessage::class . ':getMessages');
-
+	$this->get('/{from_id}', controllers\MemberMessageCtrl::class . ':getMessages');
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 
+
+/*
+ * Notification Route
+ */
+$app->group('/notif', function() {
+	$this->get('', controllers\MemberNotifCtrl::class . ':select');
+	$this->post('/read', controllers\MemberNotifCtrl::class . ':read');
+});
 
 /* RUN!! */
 $app->run();

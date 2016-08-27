@@ -26,11 +26,37 @@ class UserCtrl extends BaseController {
 	private function getUserById($memberId) {
 		$user = $this->db->get('member',
 			[
-			'member_id', 'member_name', 'CONCAT[\'' . BASE_URL . 'images/persons/\', member_image](member_image)', 'member_email', 'member_address', 
-			'gender', 'birth_date', 'member_phone'
+				'member_id',
+				'member_name',
+				'CONCAT[\'' . BASE_URL . 'images/persons/\', member_image](member_image)',
+				'member_email',
+				'member_address', 
+				'gender',
+				'birth_date',
+				'member_phone'
 			], ['member_id' => $memberId]);
 
 		return $user;
+	}
+
+	public function updateUser(Request $req, Response $res, $args) {
+		$posts = $this->getPosts();
+		if ($posts) {
+			$diss = [];
+			if ($this->cleanInput($posts, ['member_name', 'member_phone', 'member_address'], $diss)) {
+				$update = $this->db->update('member', $posts, ['member_id' => $this->user->id]);
+				$this->setTrue();
+			} else {
+				if (count($diss)) {
+					$this->error(implode(', ', $diss) . ' tidak diperbolehkan');
+				} else {
+					$this->error('Kesalahan sistem');
+				}
+			}
+		} else {
+			$this->error("Data tidak lengkap");
+		}
+		return $this->result;
 	}
 
 	public function getBookHistory(Request $req, Response $res, $args) {
