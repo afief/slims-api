@@ -28,7 +28,7 @@ class MemberMessageCtrl extends BaseController {
 
 						$insert = $this->db->insert('member_message', $posts);
 						if ($insert) {
-							$this->notif->send($this->user->id, $posts['member_id'], 'mengirim pesan untuk Anda', $insert);					
+							$this->notif->send($this->user->id, $posts['member_id'], 'mengirim pesan untuk Anda', $insert);			
 							$this->setTrue();
 						} else{
 							$this->error('Gagal tersimpan');

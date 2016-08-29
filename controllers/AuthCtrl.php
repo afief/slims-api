@@ -110,6 +110,10 @@ class AuthCtrl extends BaseController {
 						'text'			=> "Selamat Datang di Digital Library 2.0"
 					]);
 
+					if ($insert) {
+						$this->notif->send('adminlabschool', $postData['member_id'], 'mengirim pesan untuk Anda', $insert);
+					}
+
 					if ($this->db->lastError != '') {
 						$this->error($this->db->lastError);
 					} else {
