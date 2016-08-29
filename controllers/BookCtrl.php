@@ -53,7 +53,7 @@ class BookCtrl extends BaseController {
 			],
 			['biblio.biblio_id', 'biblio.title', 
 			'biblio.publish_year', 
-			'mst_language.language_name', 'biblio.image', 'biblio.promoted',
+			'mst_language.language_name', 'CONCAT[\'' . BOOK_URL . '\', biblio.image](image)', 'biblio.promoted',
 			'mst_gmd.gmd_name',
 			'mst_publisher.publisher_name'
 			],
@@ -114,7 +114,7 @@ class BookCtrl extends BaseController {
 		'biblio.source',
 		'biblio.classification',
 		'biblio.notes',
-		'biblio.image',
+		'CONCAT[\'' . BOOK_URL . '\', biblio.image](image)',
 		'biblio.file_att',
 		'biblio.opac_hide',
 		'biblio.promoted',

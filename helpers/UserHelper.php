@@ -22,25 +22,12 @@ class UserHelper {
 		$request = $this->ci->get('request');
 		$tokenJWT = $request->getHeader('token');
 		if ($tokenJWT) {	
-			if (count(explode(".", $tokenJWT[0])) <= 2) {
-				$tokenJWT[0] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." . $tokenJWT[0];
-			}
-			try {
-				$tokenData = JWT::decode($tokenJWT[0], $this->ci->settings['server_key'], ['HS256']);
-				if ($tokenData) {
-					$this->id = $tokenData->uid;
-					$this->token = $tokenData->tkn;
+			$member_id = $this->ci->db->get('member_logins', 'member_id', ['token' => $tokenJWT]);
+			if ($member_id) {
+				$this->id = $member_id;
+				$this->token = $tokenJWT;
 
-					/* Check User Login Token */
-					$isValid = $this->ci->db->count('member_logins', ['AND' => ['member_id' => $this->id, 'token' => $this->token]]);
-					if ($isValid > 0) {
-						$this->isLogin = true;
-					} else {
-						$this->isLogin = false;
-					}
-				}
-			} catch (\Exception $e) {
-				//Invalid token from header
+				$this->isLogin = true;
 			}
 		}
 	}
@@ -48,7 +35,7 @@ class UserHelper {
 
 	/* buat token baru dan simpan di database */
 	public function generateToken($user_id) {
-		$token = $this->ci->util->generateRandomString(10) . $user_id;
+		$token = $this->ci->util->generateRandomString(10) . $user_id . time();
 		$ip = $this->ci->util->determineClientIpAddress();
 		$browser = $this->ci->util->getBrowser();
 
@@ -60,7 +47,8 @@ class UserHelper {
 		]);
 
 		if ($insert) {
-			$token = [
+			return $token;
+			/*$token = [
 				'uid'	=> $user_id,
 	    		'tkn'	=> $token
 			];
@@ -69,7 +57,7 @@ class UserHelper {
 			if (strpos($jwt, "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9") == 0) {
 				$jwt = implode(".", array_splice(explode(".", $jwt), 1, 2));
 			}
-			return $jwt;
+			return $jwt;*/
 		}
 		return false;
 	}

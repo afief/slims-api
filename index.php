@@ -1,4 +1,9 @@
 <?php
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: token");
 require 'init.php';
@@ -27,6 +32,7 @@ $app->group('/user', function() {
 	$this->get('', controllers\UserCtrl::class . ':getUser');
 	$this->post('', controllers\UserCtrl::class . ':updateUser');
 	$this->get('/books', controllers\UserCtrl::class . ':getBookHistory');
+	$this->post('/avatar', controllers\UserCtrl::class . ':updateAvatar');
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 
@@ -70,6 +76,9 @@ $app->group('/notif', function() {
 	$this->get('', controllers\MemberNotifCtrl::class . ':select');
 	$this->post('/read', controllers\MemberNotifCtrl::class . ':read');
 });
+
+
+$app->get('/check-version/{version_id}', controllers\BaseController::class . ':checkVersion');
 
 /* RUN!! */
 $app->run();

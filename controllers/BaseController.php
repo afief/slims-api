@@ -3,6 +3,7 @@
 namespace controllers;
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
 use \Interop\Container\ContainerInterface;
 
 class BaseController {
@@ -98,5 +99,20 @@ class BaseController {
 		} else {
 			array_push($this->result['data'], $data);
 		}
+	}
+
+	public function checkVersion(Request $req, Response $res, $args) {
+		$vid = intval($args['version_id']);
+
+		if ($vid < 2) {
+			$this->setTrue();
+			$this->setData([
+				'title' => 'Update Aplikasi',
+				'text' => 'Silakan update Digilib ke versi lebih baru.',
+				'gplay' => "market://details?id=com.esqvt.esqvirtualtraining"
+				]);
+		}
+
+		return $this->result;
 	}
 }

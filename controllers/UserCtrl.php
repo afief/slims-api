@@ -26,14 +26,14 @@ class UserCtrl extends BaseController {
 	private function getUserById($memberId) {
 		$user = $this->db->get('member',
 			[
-				'member_id',
-				'member_name',
-				'CONCAT[\'' . BASE_URL . 'images/persons/\', member_image](member_image)',
-				'member_email',
-				'member_address', 
-				'gender',
-				'birth_date',
-				'member_phone'
+			'member_id',
+			'member_name',
+			'CONCAT[\'' . BASE_URL . 'images/persons/\', member_image](member_image)',
+			'member_email',
+			'member_address', 
+			'gender',
+			'birth_date',
+			'member_phone'
 			], ['member_id' => $memberId]);
 
 		return $user;
@@ -62,11 +62,11 @@ class UserCtrl extends BaseController {
 	public function getBookHistory(Request $req, Response $res, $args) {
 		$select = $this->db->select('loan',
 			[
-				'[>]item' => ['item_code' => 'item_code'],
-				'[>]biblio' => ['item.biblio_id' => 'biblio_id'],
-				'[>]mst_gmd' => ['biblio.gmd_id' => 'gmd_id'],
-				'[>]mst_publisher' => ['biblio.publisher_id' => 'publisher_id'],
-				'[>]mst_language' => ['biblio.language_id' => 'language_id']
+			'[>]item' => ['item_code' => 'item_code'],
+			'[>]biblio' => ['item.biblio_id' => 'biblio_id'],
+			'[>]mst_gmd' => ['biblio.gmd_id' => 'gmd_id'],
+			'[>]mst_publisher' => ['biblio.publisher_id' => 'publisher_id'],
+			'[>]mst_language' => ['biblio.language_id' => 'language_id']
 			],
 			[
 			'loan.loan_date', 'loan.due_date', 'loan.is_lent', 'loan.is_return', 'loan.return_date', 'loan.renewed',
@@ -84,6 +84,45 @@ class UserCtrl extends BaseController {
 		if ($select) {
 			$this->setTrue();
 			$this->setData($select);
+		}
+
+		return $this->result;
+	}
+
+	public function updateAvatar(Request $req, Response $res, $args) {
+		$files = $req->getUploadedFiles();
+
+		if (!empty($files['file'])) {
+
+			$file = $files['file'];
+
+			$key = 'member_' . $this->user->id . '_' . time();
+			$ext = 'jpg';//pathinfo($file->file, PATHINFO_EXTENSION);
+
+			$filename = $key . '.' . $ext;
+
+			if (move_uploaded_file($file->file, AVATAR_DIR . $filename)) {
+				$resCrop = $this->ci->util->cropImage( AVATAR_DIR . $filename, 400 );
+				if ($resCrop) {
+					$resDB = $this->db->update("member",
+						["member_image"	=> $filename],
+						["member_id" => $this->user->id]
+					);
+
+					if ($resDB) {
+						$this->setTrue();
+						$this->setData(AVATAR_URL . $filename);
+					} else {
+						$this->error('Gagal update database');
+					}
+				} else {
+					$this->error('Gagal mengatur ukuran gambar');
+				}
+			} else {
+				$this->error('Gagal upload file');
+			}
+		} else {
+			$this->error('File tidak ditemukan');
 		}
 
 		return $this->result;

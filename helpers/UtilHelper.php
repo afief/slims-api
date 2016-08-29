@@ -48,4 +48,15 @@ class UtilHelper {
         }
         return true;
     }
+
+    public function cropImage($destination, $size) {
+    	$resizeObj = new \libraries\resize($destination);
+
+		$resizeObj -> resizeImage($size, $size, 'crop');
+		$resizeObj -> saveImage($destination, 80);
+
+		if (file_exists($destination))
+			return true;
+		return false;
+    }
 }

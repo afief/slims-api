@@ -140,16 +140,16 @@ class medoo
 				$commands[] = "SET NAMES '" . $this->charset . "'";
 			}
 
-			$this->pdo = new \PDO(
-				$dsn,
+			$this->pdo = new \mysqli(
+				$this->server,
 				$this->username,
 				$this->password,
-				$this->option
+				$this->database_name
 				);
 
 			foreach ($commands as $value)
 			{
-				$this->pdo->exec($value);
+				$this->pdo->query($value);
 			}
 		}
 		catch (\PDOException $e) {
@@ -193,7 +193,7 @@ class medoo
 
 		array_push($this->logs, $query);
 
-		$result = $this->pdo->exec($query);
+		$result = $this->pdo->query($query);
 
 		if ($this->error()[2] != "") {
 			array_push($this->errors, $this->error()[2]);
@@ -205,7 +205,7 @@ class medoo
 
 	public function quote($string)
 	{
-		return $this->pdo->quote($string);
+		return "'" .  $this->pdo->real_escape_string($string) . "'";
 	}
 
 	protected function column_quote($string)
@@ -262,7 +262,7 @@ class medoo
 
 		foreach ($array as $value)
 		{
-			$temp[] = is_int($value) ? $value : $this->pdo->quote($value);
+			$temp[] = is_int($value) ? $value : "'" . $this->pdo->real_escape_string($value) . "'";
 		}
 
 		return implode($temp, ',');
@@ -721,9 +721,11 @@ class medoo
 		//echo $this->select_context($table, $join, $columns, $where) . "\n\r";
 		$query = $this->query($this->select_context($table, $join, $columns, $where));
 
-		return $query ? $query->fetchAll(
-			(is_string($columns) && $columns != '*') ? \PDO::FETCH_COLUMN : \PDO::FETCH_ASSOC
-			) : false;
+		if (is_string($columns) && $columns != '*') {
+			return $this->assocColumn($query);
+		} else {
+			return $this->assocAll($query);
+		}
 	}
 
 	public function insert($table, $datas)
@@ -773,7 +775,7 @@ class medoo
 
 			$this->exec('INSERT INTO "' . $this->prefix . $table . '" (' . implode(', ', $columns) . ') VALUES (' . implode($values, ', ') . ')');
 
-			$lastId[] = $this->pdo->lastInsertId();
+			$lastId[] = $this->pdo->insert_id;
 		}
 
 		return count($lastId) > 1 ? $lastId : $lastId[ 0 ];
@@ -879,23 +881,15 @@ class medoo
 
 		if ($query)
 		{
-			$data = $query->fetchAll(\PDO::FETCH_ASSOC);
+			$data = $query->fetch_assoc();
 
-			if (isset($data[ 0 ]))
+			$column = $where == null ? $join : $column;
+
+			if (is_string($column) && $column != '*')
 			{
-				$column = $where == null ? $join : $column;
-
-				if (is_string($column) && $column != '*')
-				{
-					return $data[ 0 ][ $column ];
-				}
-
-				return $data[ 0 ];
+				return $data[ $column ];
 			}
-			else
-			{
-				return false;
-			}
+			return $data;
 		}
 		else
 		{
@@ -911,7 +905,7 @@ class medoo
 
 		if ($query)
 		{
-			return $query->fetchColumn() === '1';
+			return $query->fetch_field() === '1';
 		}
 		else
 		{
@@ -922,8 +916,8 @@ class medoo
 	public function count($table, $join = null, $column = null, $where = null)
 	{
 		$query = $this->query($this->select_context($table, $join, $column, $where, 'COUNT'));
-
-		return $query ? 0 + $query->fetchColumn() : false;
+		$resCount = $query->fetch_array();
+		return $resCount ? intval($resCount[0]) : false;
 	}
 
 	public function max($table, $join, $column = null, $where = null)
@@ -932,7 +926,8 @@ class medoo
 
 		if ($query)
 		{
-			$max = $query->fetchColumn();
+			$resCount = $query->fetch_array();
+			$max = $resCount ? intval($resCount[0]) : false;
 
 			return is_numeric($max) ? $max + 0 : $max;
 		}
@@ -948,7 +943,8 @@ class medoo
 
 		if ($query)
 		{
-			$min = $query->fetchColumn();
+			$resCount = $query->fetch_array();
+			$min = $resCount ? intval($resCount[0]) : false;
 
 			return is_numeric($min) ? $min + 0 : $min;
 		}
@@ -961,15 +957,15 @@ class medoo
 	public function avg($table, $join, $column = null, $where = null)
 	{
 		$query = $this->query($this->select_context($table, $join, $column, $where, 'AVG'));
-
-		return $query ? 0 + $query->fetchColumn() : false;
+		$resCount = $query->fetch_array();
+		return $resCount ? intval($resCount[0]) : false;
 	}
 
 	public function sum($table, $join, $column = null, $where = null)
 	{
 		$query = $this->query($this->select_context($table, $join, $column, $where, 'SUM'));
-
-		return $query ? 0 + $query->fetchColumn() : false;
+		$resCount = $query->fetch_array();
+		return $resCount ? intval($resCount[0]) : false;
 	}
 
 	public function action($actions)
@@ -1004,7 +1000,7 @@ class medoo
 
 	public function error()
 	{
-		return $this->pdo->errorInfo();
+		return [$this->pdo->error != '' ? 1 : 0, '', $this->pdo->error];
 	}
 
 	public function last_query()
@@ -1037,10 +1033,32 @@ class medoo
 	public function manual($sql) {
 		$query = $this->query($sql);
 		if ($this->lastError == "") {
-			return $query->fetchAll(\PDO::FETCH_ASSOC);
+			return $this->assocAll($query);
 		} else {
 			return $this->lastError;
 		}
+	}
+
+	private function assocAll(&$res) {
+		$result = [];
+		while ($row = $res->fetch_assoc()) {
+			$result[] = $row;
+		}
+
+		$res->free();
+		return $result;
+	}
+
+	private function assocColumn(&$res) {
+		$result = [];
+		while ($row = $res->fetch_assoc()) {
+			foreach ($row as $ro) {
+				$result[] += $ro;
+			}
+		}
+
+		$res->free();
+		return $result;
 	}
 }
 ?>

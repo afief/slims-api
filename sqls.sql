@@ -1,26 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 4.5.1
--- http://www.phpmyadmin.net
---
--- Host: 127.0.0.1
--- Generation Time: 07 Agu 2016 pada 20.04
--- Versi Server: 10.1.10-MariaDB
--- PHP Version: 5.6.19
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `slims`
---
-
--- --------------------------------------------------------
 
 --
 -- Struktur dari tabel `biblio_rate`
@@ -32,6 +9,19 @@ CREATE TABLE `biblio_rate` (
   `member_id` varchar(20) NOT NULL DEFAULT '',
   `rate` int(1) NOT NULL DEFAULT '1',
   `input_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `member_favorit`
+--
+
+CREATE TABLE `member_favorit` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `member_id` varchar(20) NOT NULL,
+  `biblio_id` int(10) UNSIGNED NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -50,6 +40,36 @@ CREATE TABLE `member_logins` (
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `member_message`
+--
+
+CREATE TABLE `member_message` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `member_id` varchar(20) NOT NULL,
+  `from_id` varchar(20) NOT NULL,
+  `text` varchar(250) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `member_notification`
+--
+
+CREATE TABLE `member_notification` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `to_id` varchar(20) NOT NULL,
+  `from_id` varchar(20) NOT NULL,
+  `text` varchar(250) NOT NULL,
+  `param` varchar(20) NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 --
 -- Indexes for dumped tables
 --
@@ -61,9 +81,27 @@ ALTER TABLE `biblio_rate`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `member_favorit`
+--
+ALTER TABLE `member_favorit`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `member_logins`
 --
 ALTER TABLE `member_logins`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `member_message`
+--
+ALTER TABLE `member_message`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `member_notification`
+--
+ALTER TABLE `member_notification`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -74,45 +112,24 @@ ALTER TABLE `member_logins`
 -- AUTO_INCREMENT for table `biblio_rate`
 --
 ALTER TABLE `biblio_rate`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
---
--- AUTO_INCREMENT for table `member_logins`
---
-ALTER TABLE `member_logins`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-
-
---
--- Struktur dari tabel `member_favorit`
---
-
-CREATE TABLE `member_favorit` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `member_id` varchar(20) NOT NULL,
-  `biblio_id` int(10) UNSIGNED NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `member_favorit`
---
-ALTER TABLE `member_favorit`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 --
 -- AUTO_INCREMENT for table `member_favorit`
 --
 ALTER TABLE `member_favorit`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+--
+-- AUTO_INCREMENT for table `member_logins`
+--
+ALTER TABLE `member_logins`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+--
+-- AUTO_INCREMENT for table `member_message`
+--
+ALTER TABLE `member_message`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+--
+-- AUTO_INCREMENT for table `member_notification`
+--
+ALTER TABLE `member_notification`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
