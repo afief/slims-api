@@ -261,7 +261,7 @@ class BookCtrl extends BaseController {
 	}
 
 	public function getTopics(Request $req, Response $res, $args) {
-		$select = $this->db->manual('SELECT topic_id as id, topic FROM `mst_topic` WHERE topic_id IN (SELECT DISTINCT(topic_id) FROM biblio_topic) ORDER BY `topic_type`  DESC');
+		$select = $this->db->manual('SELECT topic_id as id, topic FROM `mst_topic` WHERE topic_id IN (SELECT DISTINCT(topic_id) FROM biblio_topic) ORDER BY `topic_id` ASC');
 
 		if ($select) {
 			$this->setTrue();
