@@ -42,6 +42,7 @@ $app->group('/user', function() {
 $app->group('/book', function() {
 	// ambil data buku
 	$this->get('s', controllers\BookCtrl::class . ':select');
+	$this->get('s/topics', controllers\BookCtrl::class . ':getTopics');
 
 	$this->group('/{biblio_id}', function() {
 		$this->get('', controllers\BookCtrl::class . ':get');

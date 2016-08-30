@@ -260,6 +260,17 @@ class BookCtrl extends BaseController {
 		return $this->result;
 	}
 
+	public function getTopics(Request $req, Response $res, $args) {
+		$select = $this->db->manual('SELECT topic_id as id, topic FROM `mst_topic` WHERE topic_id IN (SELECT DISTINCT(topic_id) FROM biblio_topic) ORDER BY `topic_type`  DESC');
+
+		if ($select) {
+			$this->setTrue();
+			$this->setData($select);
+		}
+
+		return $this->result;
+	}
+
 }
 
 ?>
