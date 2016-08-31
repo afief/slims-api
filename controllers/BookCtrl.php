@@ -36,6 +36,14 @@ class BookCtrl extends BaseController {
 					$whereAr['biblio.biblio_id'] = $favIds;
 				}
 			}
+			if (isset($args['topic'])) {
+				$blids = $this->db->select('biblio_topic', 'biblio_id', ['topic_id' => $args['topic']]);
+				if ($blids) {
+					$whereAr['biblio.biblio_id'] = $blids;
+
+					$args['topic_name'] = $this->db->get('mst_topic', 'topic', ['topic_id' => $args['topic']]);
+				}
+			}
 		}
 
 		if (count($whereAr) > 1) {
@@ -59,6 +67,7 @@ class BookCtrl extends BaseController {
 			],
 			$where);
 
+		//print_r($this->db->lastError);
 
 		for ($i = 0; $i < count($select); $i++) {
 			$select[$i]['item_count'] = $this->getBiblioItemCount($select[$i]['biblio_id']);
