@@ -23,6 +23,17 @@ class UserCtrl extends BaseController {
 		return $this->result;
 	}
 
+	public function getOtherUser(Request $req, Response $res, $args) {	
+		$member_id = $args['member_id'];
+		$user = $this->getUserById($member_id);
+		if ($user) {
+			$this->setTrue();
+			$this->setData($user);
+		}
+
+		return $this->result;	
+	}
+
 	private function getUserById($memberId) {
 		$user = $this->db->get('member',
 			[

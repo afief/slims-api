@@ -193,8 +193,12 @@ class BookCtrl extends BaseController {
 	}
 	private function getBiblioItems($biblio_id) {
 		$items = $this->db->select('item(i)',
-			['[>]mst_coll_type(t)' => ['coll_type_id' => 'coll_type_id'], '[>]loan(l)' => ['item_code' => 'item_code', 'is_lent' => '=1', 'is_return' => '=0']],
-			['i.item_id', 'i.call_number', 't.coll_type_id', 't.coll_type_name', 'i.item_code', 'l.loan_date', 'l.due_date'],
+			[
+				'[>]mst_coll_type(t)' => ['coll_type_id' => 'coll_type_id'],
+				'[>]loan(l)' => ['item_code' => 'item_code', 'is_lent' => '=1', 'is_return' => '=0'],
+				'[>]member(m)' => ['l.member_id' => 'member_id']
+			],
+			['i.item_id', 'i.call_number', 'l.member_id', 'm.member_name', 't.coll_type_id', 't.coll_type_name', 'i.item_code', 'l.loan_date', 'l.due_date'],
 			['i.biblio_id' => $biblio_id]);
 
 		//print_r( $this->db->last_query() );

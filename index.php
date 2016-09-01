@@ -30,6 +30,8 @@ $app->group('/auth', function() {
 $app->group('/user', function() {
 	// ambil data user yang login
 	$this->get('', controllers\UserCtrl::class . ':getUser');
+	$this->get('/id/{member_id}', controllers\UserCtrl::class . ':getOtherUser');
+	
 	$this->post('', controllers\UserCtrl::class . ':updateUser');
 	$this->get('/books', controllers\UserCtrl::class . ':getBookHistory');
 	$this->post('/avatar', controllers\UserCtrl::class . ':updateAvatar');
