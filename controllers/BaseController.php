@@ -104,12 +104,20 @@ class BaseController {
 	public function checkVersion(Request $req, Response $res, $args) {
 		$vid = intval($args['version_id']);
 
-		if ($vid < 2) {
+		$prevVer = [
+			2 => '0.1.2',
+			18 => '0.1.8'
+		];
+
+		$nv = 18;
+
+		$pvs = (isset($prevVer[$vid]) ? $prevVer[$vid] : '0.1.2');
+		if ($vid < $nv) {
 			$this->setTrue();
 			$this->setData([
 				'title' => 'Update Aplikasi',
-				'text' => 'Silakan update Digilib ke versi lebih baru.',
-				'gplay' => "market://details?id=com.esqvt.esqvirtualtraining"
+				'text' => 'Anda menggunakan aplikasi versi <b>' . $pvs . '</b>. Silakan update Mobile Library 2.0 ke versi yang lebih baru (<b>' . $prevVer[$nv] . '</b>) via <b>Google Play</b>.',
+				'gplay' => "market://details?id=com.hibahdikti.digitallibrary"
 				]);
 		}
 
