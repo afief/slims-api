@@ -174,7 +174,7 @@ class BookCtrl extends BaseController {
 	}
 
 	private function getBiblioRate($biblio_id) {
-		$manual = $this->db->manual('SELECT COALESCE(TRUNCATE(SUM(`rate`) / COUNT(`rate`), 2), 0) as `average` FROM `biblio_rate` WHERE `biblio_id` = 132');
+		$manual = $this->db->manual('SELECT COALESCE(TRUNCATE(SUM(`rate`) / COUNT(`rate`), 2), 0) as `average` FROM `biblio_rate` WHERE `biblio_id` = ' . $this->db->quote($biblio_id));
 		if ($manual) {
 			$rate = $manual[0]['average'];
 			return $rate;
