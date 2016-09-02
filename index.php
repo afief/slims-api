@@ -81,6 +81,8 @@ $app->group('/notif', function() {
 });
 
 
+$app->post('/report', controllers\ReportCtrl:: class . ':send');
+
 $app->get('/check-version/{version_id}', controllers\BaseController::class . ':checkVersion');
 
 /* RUN!! */

@@ -133,3 +133,38 @@ ALTER TABLE `member_message`
 --
 ALTER TABLE `member_notification`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+
+
+
+  
+--
+-- Struktur dari tabel `member_report`
+--
+
+CREATE TABLE `member_report` (
+  `id` int(11) NOT NULL,
+  `member_id` varchar(20) NOT NULL,
+  `text` text NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `member_report`
+--
+ALTER TABLE `member_report`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `member_report`
+--
+ALTER TABLE `member_report`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
