@@ -83,7 +83,7 @@ class UserCtrl extends BaseController {
 			'loan.loan_date', 'loan.due_date', 'loan.is_lent', 'loan.is_return', 'loan.return_date', 'loan.renewed',
 			'biblio.biblio_id', 'biblio.title', 
 			'biblio.publish_year', 
-			'mst_language.language_name', 'biblio.image', 'biblio.promoted',
+			'mst_language.language_name',  'CONCAT[\'' . BOOK_URL . '\', biblio.image](image)', 'biblio.promoted',
 			'mst_gmd.gmd_name',
 			'mst_publisher.publisher_name'
 			],
