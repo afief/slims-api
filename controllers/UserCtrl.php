@@ -138,6 +138,37 @@ class UserCtrl extends BaseController {
 
 		return $this->result;
 	}
+
+	public function updateRegId(Request $req, Response $res, $args) {
+		$posts = $this->getPosts(['reg_id']);
+
+		if ($posts) {
+			$getPrevMember = $this->db->get('member_reg_id', 'reg_id', ['AND' => ['member_id' => $this->user->id, 'status' => 1]]);
+			if ($getPrevMember && ($getPrevMember == $posts['reg_id'])) {
+				$this->setTrue();
+				$this->setData('same as the old');
+			} else if ($posts['reg_id'] && (strlen($posts['reg_id']) > 5)) {
+				/* update all old user reg id */
+				$this->db->update('member_reg_id', ['status' => 0], ['member_id' => $this->user->id]);
+
+				$insert = $this->db->insert('member_reg_id', [
+					'member_id'		=> $this->user->id,
+					'reg_id'		=> $posts['reg_id'],
+					'status'		=> 1
+				]);
+				if ($insert) {
+					$this->setTrue();
+					$this->setData('new registration');
+				} else {
+					$this->error('Tidak dapat menyimpan informasi device ke server');
+				}
+			} else {
+				$this->error('Tidak dapat menyimpan informasi device ke server. Data registrasi terlalu pendek');
+			}
+		}
+
+		return $this->result;
+	}
 }
 
 ?>
