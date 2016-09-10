@@ -8,6 +8,7 @@ class UserHelper {
 	public $token = "";
 	public $id = 0;
 	public $isLogin = false;
+	public $setting = [];
 
 	private $role = "";
 	private $ci;
@@ -28,6 +29,17 @@ class UserHelper {
 				$this->token = $tokenJWT;
 
 				$this->isLogin = true;
+
+				$setting = $this->ci->db->get('member_settings', ['notif_email', 'notif_app'], ['member_id' => $member_id]);
+				if ($setting) {
+					$this->setting = $setting;
+				} else {
+					$insert = $this->ci->db->insert('member_settings', ['member_id' => $member_id]);
+					$this->setting = [
+						'notif_email' => '1',
+						'notif_app'	=> '1'
+					];
+				}
 			}
 		}
 	}

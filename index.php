@@ -37,6 +37,7 @@ $app->group('/user', function() {
 	$this->get('/books', controllers\UserCtrl::class . ':getBookHistory');
 	$this->post('/avatar', controllers\UserCtrl::class . ':updateAvatar');
 	$this->post('/reg-id', controllers\UserCtrl::class . ':updateRegId');
+	$this->post('/setting', controllers\UserCtrl::class . ':updateUserSetting');
 
 })->add(middleware\AuthMiddleware::class . ':checkLogin');
 

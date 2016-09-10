@@ -302,6 +302,15 @@ class BookCtrl extends BaseController {
 			],
 			['member_id' => $this->user->id]);
 
+		for ($i = 0; $i < count($select); $i++) {
+			$authors = $this->getBibioAuthors($select[$i]['biblio_id']);
+			$authorTexts = [];
+			foreach ($authors as $author) {
+				$authorTexts[] = $author['author_name'];
+			}
+			$select[$i]['authors'] = implode(', ', $authorTexts);
+		}
+
 		if (is_array($select)) {
 			$this->setTrue();
 			$this->setData($select);
@@ -314,24 +323,37 @@ class BookCtrl extends BaseController {
 		$posts = $this->getPosts(['biblio_id']);
 
 		if ($posts) {
+			/* check kuota reservasi */
 			$checkUserRevCount = $this->db->count('reserve', ['member_id' => $this->user->id]);
 			if ($checkUserRevCount < 5) {
 
+				/* check apakah sudah reservasi */
 				$checkRevBiblio = $this->db->get('reserve', 'reserve_id', ['AND' => ['member_id' => $this->user->id, 'biblio_id' => $posts['biblio_id']]]);
 
 				if ($checkRevBiblio) {
 					$this->error("Anda sudah reservasi buku ini.");
 				} else {
+
+					/* check item code dari biblio tersebut */
 					$item_codes = $this->db->select('item', 'item_code', ['biblio_id' => $posts['biblio_id']]);
 
 					if ($item_codes) {
 						$foundCode = "";
+						$unLoanFound = "";
 						$i = 0;
-						while (($foundCode == "") && ($i < count($item_codes))) {
+						while (($unLoanFound == "") && ($i < count($item_codes))) {
 							$exist = $this->db->get('reserve', 'member_id', ['item_code' => $item_codes[$i]]);
 							if (!$exist) {
+								/* bila tidak di reserve anggota lain, ambil */
 								$foundCode = $item_codes[$i];
+
+								$existUnloan = $this->db->get('loan', 'loan_id', ['AND' => ['item_code' => $item_codes[$i], 'is_lent' => 1, 'is_return' => 0]]);
+								if (!$existUnloan) {
+									$unLoanFound = $item_codes[$i];
+									$foundCode = $item_codes[$i];
+								}
 							}
+
 							$i++;
 						}
 

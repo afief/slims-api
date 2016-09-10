@@ -16,6 +16,8 @@ class UserCtrl extends BaseController {
 
 		$user = $this->getUserById($this->user->id);
 		if ($user) {
+			$user['setting'] = $this->user->setting;
+
 			$this->setTrue();
 			$this->setData($user);
 		}
@@ -173,6 +175,19 @@ class UserCtrl extends BaseController {
 				$this->error('Tidak dapat menyimpan informasi device ke server. Data registrasi terlalu pendek');
 			}
 		}
+
+		return $this->result;
+	}
+
+	public function updateUserSetting(Request $req, Response $res, $args) {
+		$posts = $this->getPosts();
+
+		$notif_email = isset($posts['notif_email']) ? intval($posts['notif_email']) : '1';
+		$notif_app = isset($posts['notif_app']) ? intval($posts['notif_app']) : '1';
+
+		$update = $this->db->update('member_settings', ['notif_email' => $notif_email, 'notif_app' => $notif_app], ['member_id' => $this->user->id]);
+
+		$this->setTrue();
 
 		return $this->result;
 	}
