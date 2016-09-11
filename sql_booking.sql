@@ -1,0 +1,1 @@
+ALTER TABLE `loan` ADD `is_booking` TINYINT NOT NULL DEFAULT '0' AFTER `return_date`, ADD `booking_expire` DATETIME NULL DEFAULT NULL AFTER `is_booking`;

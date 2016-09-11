@@ -194,11 +194,12 @@ class BookCtrl extends BaseController {
 	private function getBiblioItems($biblio_id) {
 		$items = $this->db->select('item(i)',
 			[
+				'[>]reserve(r)'	=> ['i.item_code' => 'item_code'],
 				'[>]mst_coll_type(t)' => ['coll_type_id' => 'coll_type_id'],
 				'[>]loan(l)' => ['item_code' => 'item_code', 'is_lent' => '=1', 'is_return' => '=0'],
 				'[>]member(m)' => ['l.member_id' => 'member_id']
 			],
-			['i.item_id', 'i.call_number', 'l.member_id', 'm.member_name', 't.coll_type_id', 't.coll_type_name', 'i.item_code', 'l.loan_date', 'l.due_date'],
+			['i.item_id', 'i.call_number', 'l.member_id', 'm.member_name', 't.coll_type_id', 't.coll_type_name', 'i.item_code', 'l.loan_date', 'l.due_date', 'r.member_id(rev_member_id)', 'r.reserve_date'],
 			['i.biblio_id' => $biblio_id]);
 
 		//print_r( $this->db->last_query() );
@@ -279,6 +280,66 @@ class BookCtrl extends BaseController {
 		if ($select) {
 			$this->setTrue();
 			$this->setData($select);
+		}
+
+		return $this->result;
+	}
+
+	public function selectReserve(Request $req, Response $res, $args) {
+		$select = $this->db->select('reserve',
+			[
+				'[>]biblio' => ['biblio_id' => 'biblio_id'],
+				'[>]mst_gmd' => ['biblio.gmd_id' => 'gmd_id'],
+				'[>]mst_publisher' => ['biblio.publisher_id' => 'publisher_id'],
+				'[>]mst_language' => ['biblio.language_id' => 'language_id']
+			],
+			['biblio.biblio_id', 'biblio.title', 'reserve.item_code', 'reserve.reserve_date',
+			'biblio.publish_year', 
+			'mst_language.language_name', 'CONCAT[\'' . BOOK_URL . '\', biblio.image](image)', 'biblio.promoted',
+			'mst_gmd.gmd_name',
+			'mst_publisher.publisher_name'
+			],
+			['member_id' => $this->user->id]);
+
+		if ($select) {
+			$this->setTrue();
+			$this->setData($select);
+		}
+
+		return $this->result;
+	}
+
+	public function setReserve(Request $req, Response $res, $args) {
+		$posts = $this->getPosts(['biblio_id', 'item_code']);
+
+		if ($posts) {
+			$reserved = $this->db->get('reserve', 'member_id', ['AND' => ['biblio_id' => $posts['biblio_id'], 'item_code' => $posts['item_code']]]);
+			if ($reserved) {
+				if ($reserved == $this->user->id) {
+					$this->error("Sudah direservasi oleh Anda");
+				} else {
+					$this->error("Sudah direservasi oleh " . $reserved);
+				}
+			} else {
+				$itemExist = $this->db->count('item', ['AND' => ['biblio_id' => $posts['biblio_id'], 'item_code' => $posts['item_code'] ]]);
+				if ($itemExist) {
+					$insert = $this->db->insert('reserve', [
+						'member_id' => $this->user->id,
+						'biblio_id' => $posts['biblio_id'],
+						'item_code' => $posts['item_code'],
+						'reserve_date' => date('Y-m-d H:i:s')
+					]);
+					if ($insert) {
+						$this->setTrue();
+					} else {
+						$this->error("Terjadi kesalahan ketika menyimpan database");
+					}
+				} else {
+					$this->error("Buku dan Kode eksemplar tidak ditemukan");
+				}
+			}
+		} else {
+			$this->error("Data tidak lengkap");
 		}
 
 		return $this->result;

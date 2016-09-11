@@ -1,5 +1,6 @@
 <?php
 
+date_default_timezone_set('Asia/Jakarta');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -46,6 +47,8 @@ $app->group('/book', function() {
 	// ambil data buku
 	$this->get('s', controllers\BookCtrl::class . ':select');
 	$this->get('s/topics', controllers\BookCtrl::class . ':getTopics');
+	$this->get('s/reserve', controllers\BookCtrl::class . ':selectReserve');
+	$this->post('s/reserve', controllers\BookCtrl::class . ':setReserve');
 
 	$this->group('/{biblio_id}', function() {
 		$this->get('', controllers\BookCtrl::class . ':get');
