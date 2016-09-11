@@ -146,6 +146,7 @@ class BookCtrl extends BaseController {
 			if ($this->user->isLogin) {
 				$get['is_fav'] = $this->db->count('member_favorit', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
 				$get['own_rate'] = $this->db->get('biblio_rate', 'rate', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
+				$get['is_reserve'] = $this->db->count('reserve', ['AND' => ['biblio_id' => $biblio_id, 'member_id' => $this->user->id]]);
 			}
 
 			$this->setTrue();
@@ -301,7 +302,7 @@ class BookCtrl extends BaseController {
 			],
 			['member_id' => $this->user->id]);
 
-		if ($select) {
+		if (is_array($select)) {
 			$this->setTrue();
 			$this->setData($select);
 		}
@@ -310,33 +311,71 @@ class BookCtrl extends BaseController {
 	}
 
 	public function setReserve(Request $req, Response $res, $args) {
-		$posts = $this->getPosts(['biblio_id', 'item_code']);
+		$posts = $this->getPosts(['biblio_id']);
 
 		if ($posts) {
-			$reserved = $this->db->get('reserve', 'member_id', ['AND' => ['biblio_id' => $posts['biblio_id'], 'item_code' => $posts['item_code']]]);
-			if ($reserved) {
-				if ($reserved == $this->user->id) {
-					$this->error("Sudah direservasi oleh Anda");
+			$checkUserRevCount = $this->db->count('reserve', ['member_id' => $this->user->id]);
+			if ($checkUserRevCount < 5) {
+
+				$checkRevBiblio = $this->db->get('reserve', 'reserve_id', ['AND' => ['member_id' => $this->user->id, 'biblio_id' => $posts['biblio_id']]]);
+
+				if ($checkRevBiblio) {
+					$this->error("Anda sudah reservasi buku ini.");
 				} else {
-					$this->error("Sudah direservasi oleh " . $reserved);
-				}
-			} else {
-				$itemExist = $this->db->count('item', ['AND' => ['biblio_id' => $posts['biblio_id'], 'item_code' => $posts['item_code'] ]]);
-				if ($itemExist) {
-					$insert = $this->db->insert('reserve', [
-						'member_id' => $this->user->id,
-						'biblio_id' => $posts['biblio_id'],
-						'item_code' => $posts['item_code'],
-						'reserve_date' => date('Y-m-d H:i:s')
-					]);
-					if ($insert) {
-						$this->setTrue();
+					$item_codes = $this->db->select('item', 'item_code', ['biblio_id' => $posts['biblio_id']]);
+
+					if ($item_codes) {
+						$foundCode = "";
+						$i = 0;
+						while (($foundCode == "") && ($i < count($item_codes))) {
+							$exist = $this->db->get('reserve', 'member_id', ['item_code' => $item_codes[$i]]);
+							if (!$exist) {
+								$foundCode = $item_codes[$i];
+							}
+							$i++;
+						}
+
+						if ($foundCode) {
+							$insert = $this->db->insert('reserve', [
+								'member_id' => $this->user->id,
+								'biblio_id' => $posts['biblio_id'],
+								'item_code' => $foundCode,
+								'reserve_date' => date('Y-m-d H:i:s')
+							]);
+							if ($insert) {
+								$this->setTrue();
+								$this->setData("Buku berhasil direservasi. Anda dapat melihat daftar buku yang direservasi pada halaman Reservasi.");
+							} else {
+								$this->error("Terjadi kesalahan ketika menyimpan database");
+							}
+						} else {
+							$this->error("Semua buku ini sudah direservasi");
+						}
 					} else {
-						$this->error("Terjadi kesalahan ketika menyimpan database");
+						$this->error("Jumlah eksemplar di perpustakaan tidak mencukupi");
 					}
-				} else {
-					$this->error("Buku dan Kode eksemplar tidak ditemukan");
 				}
+
+			} else {
+				$this->error("Hanya bisa reservasi paling banyak lima buku.");
+			}
+		} else {
+			$this->error("Data tidak lengkap");
+		}
+
+		return $this->result;
+	}
+
+	public function unsetReserve(Request $req, Response $res, $args) {
+		$posts = $this->getPosts(['biblio_id']);
+
+		if ($posts) {
+			$checkRevBiblio = $this->db->get('reserve', 'reserve_id', ['AND' => ['member_id' => $this->user->id, 'biblio_id' => $posts['biblio_id']]]);
+			if ($checkRevBiblio) {
+				$this->db->delete('reserve', ['reserve_id' => $checkRevBiblio]);
+				$this->setTrue();
+			} else {
+				$this->error("Anda belum reservasi buku ini");
 			}
 		} else {
 			$this->error("Data tidak lengkap");

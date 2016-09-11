@@ -1053,7 +1053,7 @@ class medoo
 		$result = [];
 		while ($row = $res->fetch_assoc()) {
 			foreach ($row as $ro) {
-				$result[] += $ro;
+				$result[] = $ro;
 			}
 		}
 

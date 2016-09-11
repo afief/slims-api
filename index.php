@@ -49,6 +49,7 @@ $app->group('/book', function() {
 	$this->get('s/topics', controllers\BookCtrl::class . ':getTopics');
 	$this->get('s/reserve', controllers\BookCtrl::class . ':selectReserve');
 	$this->post('s/reserve', controllers\BookCtrl::class . ':setReserve');
+	$this->post('s/unset-reserve', controllers\BookCtrl::class . ':unsetReserve');
 
 	$this->group('/{biblio_id}', function() {
 		$this->get('', controllers\BookCtrl::class . ':get');
