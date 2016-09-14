@@ -106,12 +106,13 @@ class BaseController {
 
 		$prevVer = [
 			2 => '0.1.2',
-			18 => '0.1.8'
+			18 => '0.1.8',
+			35 => '0.3.5'
 		];
 
-		$nv = 18;
+		$nv = 35;
 
-		$pvs = (isset($prevVer[$vid]) ? $prevVer[$vid] : '0.1.2');
+		$pvs = (isset($prevVer[$vid]) ? $prevVer[$vid] : '0.1.8');
 		if ($vid < $nv) {
 			$this->setTrue();
 			$this->setData([

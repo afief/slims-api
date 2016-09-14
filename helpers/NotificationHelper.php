@@ -12,6 +12,53 @@ class NotificationHelper {
 		$this->db = $ci->db;
 	}
 
+	private function sendGCM($member_id, $title, $message, $path = '') {
+		$postData = [
+			'registration_ids' => [],
+			'data'=> [
+				'message' => '',
+				'title' => ''
+			]
+		];
+
+		$reg_id = $this->db->select('member_reg_id', 'reg_id', ['AND' => ['member_id' => $member_id, 'status' => 1]]);
+		if ($reg_id) {
+
+			$postData['registration_ids'] = $reg_id;
+			$postData['data']['title'] = $title;
+			$postData['data']['message'] = $message;
+			if ($path) {
+				$postData['data']['path'] = $path;
+			}
+
+			$curl = curl_init();
+
+			curl_setopt_array($curl, array(
+				CURLOPT_URL => "https://gcm-http.googleapis.com/gcm/send",
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => "",
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 30,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => "POST",
+				CURLOPT_POSTFIELDS => json_encode($postData),
+				CURLOPT_HTTPHEADER => array(
+					"authorization: key=AIzaSyDwXasEsaWbEtO_0ySlt2wEkcEKBAvNuMY",
+					"content-type: application/json"
+					),
+				));
+
+			$response = curl_exec($curl);
+			$err = curl_error($curl);
+
+			curl_close($curl);
+
+			return $response;
+
+		}
+		return '';
+	}
+
 	public function send($from_id, $to_id, $text, $param) {
 		$insert = $this->db->insert('member_notification', [
 			'to_id'		=> $to_id,
@@ -22,6 +69,21 @@ class NotificationHelper {
 		]);
 
 		if ($insert) {
+
+			if (strpos($text, 'mengirim pesan') !== false) {
+				$memberName = $this->db->get('member', 'member_name', ['member_id' => $from_id]);
+				if (!$memberName) {
+					$memberName = "Pesan Baru";
+				} else {
+					$memberName = $memberName . " mengirim pesan";
+				}
+				$messageText = $this->db->get('member_message', 'text', ['id' => $param]);
+				if (!$messageText) {
+					$messageText = "Klik untuk membaca pesan baru";
+				}
+
+				$this->sendGCM($to_id, $memberName, $messageText, '/app/pesan');
+			}
 			return true;
 		}
 		return false;

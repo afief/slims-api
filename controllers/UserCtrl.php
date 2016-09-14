@@ -110,9 +110,9 @@ class UserCtrl extends BaseController {
 			$file = $files['file'];
 
 			$key = 'member_' . $this->user->id . '_' . time();
-			$ext = 'jpg';//pathinfo($file->file, PATHINFO_EXTENSION);
+			$ext = strtolower(strrchr($file->getClientFilename(), '.'));
 
-			$filename = $key . '.' . $ext;
+			$filename = $key . $ext;
 
 			if (move_uploaded_file($file->file, AVATAR_DIR . $filename)) {
 				$resCrop = $this->ci->util->cropImage( AVATAR_DIR . $filename, 400 );
