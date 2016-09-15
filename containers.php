@@ -21,3 +21,8 @@ $container['util'] = function($c) {
 $container['notif'] = function($c) {
 	return new \helpers\NotificationHelper($c);
 };
+
+// Register component on container
+$container['view'] = function ($container) {
+    return new \Slim\Views\PhpRenderer('view/');
+};

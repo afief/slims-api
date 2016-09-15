@@ -17,6 +17,7 @@ class UserCtrl extends BaseController {
 		$user = $this->getUserById($this->user->id);
 		if ($user) {
 			$user['setting'] = $this->user->setting;
+			$user['gcm'] = $this->db->get('member_reg_id', 'reg_id', ['AND' => ['member_id' => $this->user->id, 'status' => 1]]);
 
 			$this->setTrue();
 			$this->setData($user);

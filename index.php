@@ -91,5 +91,9 @@ $app->post('/report', controllers\ReportCtrl:: class . ':send');
 
 $app->get('/check-version/{version_id}', controllers\BaseController::class . ':checkVersion');
 
+$app->get('/faq', function($req, $res, $args) {
+	return $this->view->render($res, 'faq.php', []);
+});
+
 /* RUN!! */
 $app->run();
